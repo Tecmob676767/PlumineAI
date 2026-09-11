@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumine AI // Autonomous Neural Operating System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-magenta: #ff007f;
+            --neon-purple: #9d4edd;
+            --dark-bg: #030712;
+            --glass-bg: rgba(10, 17, 40, 0.75);
+            --glass-border: rgba(0, 243, 255, 0.25);
+            --glass-glow: rgba(0, 243, 255, 0.15);
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(157, 78, 221, 0.15), transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(0, 243, 255, 0.12), transparent 40%),
+                linear-gradient(rgba(3, 7, 18, 0.95), rgba(3, 7, 18, 0.95)),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 243, 255, 0.02) 3px, transparent 3px);
+        }
+
+        /* Ambient animated cyber grid */
+        .cyber-grid {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 243, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 243, 255, 0.04) 1px, transparent 1px);
+            perspective: 800px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Main Container */
+        .app-layout {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Sidebar Holographic HUD */
+        .hud-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 0 25px var(--glass-glow), inset 0 0 15px rgba(0, 243, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 60px; height: 2px;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .brand-orb-mini {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--neon-cyan), var(--neon-purple));
+            box-shadow: 0 0 20px var(--neon-cyan);
+            animation: pulse-orb 3s infinite alternate;
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff, var(--neon-cyan), #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-badge {
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 243, 255, 0.15);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        /* Status metrics */
+        .hud-section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            color: var(--neon-cyan);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metrics-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+        }
+
+        .metric-row:last-child { margin-bottom: 0; }
+        .metric-val { color: var(--neon-cyan); font-weight: 600; }
+
+        .progress-bar-bg {
+            background: rgba(255, 255, 255, 0.08);
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+            box-shadow: 0 0 8px var(--neon-cyan);
+            width: 35%;
+            transition: width 0.5s ease;
+        }
+
+        .quick-actions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 4px;
+        }
+
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-btn:hover {
+            background: rgba(0, 243, 255, 0.1);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: translateX(4px);
+        }
+
+        /* Center Holographic Stage */
+        .workspace-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 0 25px var(--glass-glow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Quantum Hologram Visualizer */
+        .orb-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 0 16px;
+            position: relative;
+        }
+
+        .hologram-orb {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            position: relative;
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--neon-cyan) 40%, var(--neon-purple) 80%, #000 100%);
+            box-shadow: 0 0 45px rgba(0, 243, 255, 0.6), inset 0 0 25px rgba(255, 255, 255, 0.8);
+            animation: float-orb 4s ease-in-out infinite alternate;
+        }
+
+        .hologram-ring {
+            position: absolute;
+            top: -15px; left: -15px; right: -15px; bottom: -15px;
+            border: 1.5px dashed var(--neon-cyan);
+            border-radius: 50%;
+            animation: spin 12s linear infinite;
+            opacity: 0.6;
+        }
+
+        .hologram-ring-outer {
+            position: absolute;
+            top: -25px; left: -25px; right: -25px; bottom: -25px;
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            border-radius: 50%;
+            animation: spin-reverse 18s linear infinite;
+        }
+
+        .orb-status-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+            margin-top: 14px;
+            text-transform: uppercase;
+        }
+
+        /* Chat Stream */
+        .chat-stream {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease forwards;
+            word-break: break-word;
+            user-select: text;
+        }
+
+        .bubble-user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.3), rgba(0, 243, 255, 0.2));
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .bubble-ai {
+            align-self: flex-start;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            border-left: 3px solid var(--neon-cyan);
+            color: #f1f5f9;
+            border-bottom-left-radius: 2px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+        }
+
+        .action-tag {
+            display: inline-block;
+            background: rgba(0, 243, 255, 0.15);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Console Input Bar */
+        .input-bar-container {
+            padding: 20px 24px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .ai-input {
+            width: 100%;
+            background: rgba(3, 7, 18, 0.8);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            user-select: text;
+        }
+
+        .ai-input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            border: none;
+            color: #030712;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .send-btn:hover {
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.8);
+            transform: scale(1.02);
+        }
+
+        .voice-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--neon-cyan);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .voice-btn:hover {
+            border-color: var(--neon-magenta);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+            color: var(--neon-magenta);
+        }
+
+        .voice-btn.active {
+            background: rgba(255, 0, 127, 0.2);
+            border-color: var(--neon-magenta);
+            box-shadow: 0 0 20px var(--neon-magenta);
+            animation: pulse-orb 1s infinite alternate;
+        }
+
+        /* Animations */
+        @keyframes pulse-orb {
+            0% { transform: scale(1); filter: brightness(1); }
+            100% { transform: scale(1.06); filter: brightness(1.3); }
+        }
+
+        @keyframes float-orb {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-8px) scale(1.03); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan); }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar HUD -->
+        <aside class="hud-panel">
+            <div class="brand-header">
+                <div class="brand-orb-mini"></div>
+                <div>
+                    <h1 class="brand-title">PLUMINE AI</h1>
+                    <span class="brand-badge">AUTONOMOUS KERNEL v2.6</span>
+                </div>
+            </div>
+
+            <div class="hud-section-title">
+                <span>SYSTEM TELEMETRY</span>
+                <span style="font-size: 0.65rem; color: #4ade80;">● ONLINE</span>
+            </div>
+            <div class="metrics-card">
+                <div class="metric-row">
+                    <span>CPU LOAD</span>
+                    <span class="metric-val" id="cpu-val">--%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="cpu-bar" style="width: 25%;"></div>
+                </div>
+
+                <div class="metric-row" style="margin-top: 10px;">
+                    <span>RAM ALLOC</span>
+                    <span class="metric-val" id="ram-val">-- GB</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="ram-bar" style="width: 45%; background: linear-gradient(90deg, #c084fc, #ff007f);"></div>
+                </div>
+
+                <div class="metric-row" style="margin-top: 10px;">
+                    <span>DISK RES</span>
+                    <span class="metric-val" id="disk-val">-- GB</span>
+                </div>
+            </div>
+
+            <div class="hud-section-title">NATIVE ACTIONS</div>
+            <div class="quick-actions-list">
+                <button class="quick-btn" onclick="sendQuickPrompt('system info')">⚡ Full System Diagnostics</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('open chrome')">🌐 Launch Chrome Browser</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('open notepad')">📝 Open Notepad</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('open calculator')">🔢 Open Calculator</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('show processes')">📊 List Active Tasks</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('show clipboard')">📋 Read Clipboard</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('volume up')">🔊 Volume Boost</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('volume down')">🔉 Volume Lower</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('lock screen')">🔒 Lock Workstation</button>
+                <button class="quick-btn" onclick="sendQuickPrompt('help')">💡 View Capability Matrix</button>
+            </div>
+        </aside>
+
+        <!-- Main Interaction Workspace -->
+        <main class="workspace-panel">
+            <!-- Quantum Hologram Display -->
+            <div class="orb-stage">
+                <div class="hologram-orb" id="plumine-orb">
+                    <div class="hologram-ring"></div>
+                    <div class="hologram-ring-outer"></div>
+                </div>
+                <div class="orb-status-text" id="orb-status">NEURAL CORE READY // LISTENING</div>
+            </div>
+
+            <!-- Chat Stream History -->
+            <div class="chat-stream" id="chat-stream">
+                <div class="chat-bubble bubble-ai">
+                    <div class="action-tag">SYSTEM INITIALIZED</div>
+                    Greetings. I am <strong>Plumine AI</strong>, your autonomous on-device artificial intelligence core. 
+                    I possess native kernel, hardware, and file automation controls. Instruct me to launch applications, manipulate files, inspect telemetry, or perform any complex command.
+                </div>
+            </div>
+
+            <!-- Input Controls -->
+            <div class="input-bar-container">
+                <button class="voice-btn" id="mic-btn" title="Voice Input (Speech Recognition)" onclick="toggleVoice()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+                <div class="input-wrapper">
+                    <input type="text" id="user-input" class="ai-input" placeholder="Execute action or ask Plumine AI... (e.g. 'open notepad', 'system info', 'calculate 25^2')" autocomplete="off" onkeydown="handleKeyDown(event)">
+                </div>
+                <button class="send-btn" onclick="sendPrompt()">EXECUTE</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const chatStream = document.getElementById('chat-stream');
+        const userInput = document.getElementById('user-input');
+        const orbStatus = document.getElementById('orb-status');
+        const plumineOrb = document.getElementById('plumine-orb');
+        const micBtn = document.getElementById('mic-btn');
+
+        // Speech Recognition Setup
+        let recognition = null;
+        let isListening = false;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRec();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('active');
+                orbStatus.textContent = 'TRANSCRIBING AUDIO VECTOR...';
+            };
+
+            recognition.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                userInput.value = text;
+                sendPrompt();
+            };
+
+            recognition.onerror = () => {
+                isListening = false;
+                micBtn.classList.remove('active');
+                orbStatus.textContent = 'NEURAL CORE READY // LISTENING';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('active');
+                orbStatus.textContent = 'NEURAL CORE READY // LISTENING';
+            };
+        }
+
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in this browser.');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter') {
+                sendPrompt();
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            userInput.value = promptText;
+            sendPrompt();
+        }
+
+        async function sendPrompt() {
+            const query = userInput.value.trim();
+            if (!query) return;
+
+            // Render User Bubble
+            appendBubble('user', query);
+            userInput.value = '';
+
+            orbStatus.textContent = 'COMPUTING QUANTUM NEURAL ACTION...';
+            plumineOrb.style.animation = 'pulse-orb 0.5s infinite alternate';
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: query })
+                });
+                const data = await res.json();
+                
+                appendBubble('ai', data.response, data.action);
+
+                // Update Telemetry if action was system_info
+                if (data.action === 'system_info' && data.data) {
+                    updateTelemetry(data.data);
+                }
+            } catch (err) {
+                appendBubble('ai', 'Neural Transmission Failed: ' + err.message, 'ERROR');
+            } finally {
+                orbStatus.textContent = 'NEURAL CORE READY // LISTENING';
+                plumineOrb.style.animation = 'float-orb 4s ease-in-out infinite alternate';
+            }
+        }
+
+        function appendBubble(role, content, actionTag = null) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble bubble-${role}`;
+
+            if (role === 'ai') {
+                const tag = document.createElement('div');
+                tag.className = 'action-tag';
+                tag.textContent = actionTag ? actionTag.toUpperCase() : 'NEURAL RESPONSE';
+                bubble.appendChild(tag);
+            }
+
+            const formatted = content
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`([^`]+)`/g, '<code style="background:rgba(0,243,255,0.1);padding:1px 4px;border-radius:3px;">$1</code>');
+
+            const contentDiv = document.createElement('div');
+            contentDiv.innerHTML = formatted;
+            bubble.appendChild(contentDiv);
+
+            chatStream.appendChild(bubble);
+            chatStream.scrollTop = chatStream.scrollHeight;
+        }
+
+        function updateTelemetry(info) {
+            if (info.cpu_usage_pct !== undefined) {
+                document.getElementById('cpu-val').textContent = `${info.cpu_usage_pct}%`;
+                document.getElementById('cpu-bar').style.width = `${Math.min(info.cpu_usage_pct, 100)}%`;
+            }
+            if (info.ram_used_gb !== undefined) {
+                document.getElementById('ram-val').textContent = `${info.ram_used_gb} / ${info.ram_total_gb} GB`;
+                document.getElementById('ram-bar').style.width = `${info.ram_pct}%`;
+            }
+            if (info.disk_free_gb !== undefined) {
+                document.getElementById('disk-val').textContent = `${info.disk_free_gb} GB FREE`;
+            }
+        }
+
+        // Periodic telemetry poll
+        setInterval(async () => {
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: 'system info' })
+                });
+                const data = await res.json();
+                if (data.data) {
+                    updateTelemetry(data.data);
+                }
+            } catch (e) {}
+        }, 15000);
+    </script>
+</body>
+</html>
